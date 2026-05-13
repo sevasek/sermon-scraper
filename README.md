@@ -20,10 +20,13 @@ cd personal-project
 2. Install Dependencies
 ```bash
 pip install -r requirements.txt
+
+# Install the playwright browsers for scraping
+playwright install
 ```
 
 3. Set LLM API key
-This script will look for an Ollama API key and model name in the following location:
+The script will look for an Ollama API key and model name in the following location:
 
 ```bash
 echo "OLLAMA_HOST=http://localhost:11434" >> ~/.sermon_tech/.env
