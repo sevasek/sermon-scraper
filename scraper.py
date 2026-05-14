@@ -4,12 +4,47 @@ from playwright.async_api import async_playwright, Playwright
 import asyncio
 
 sermon_urls = set()
+
+# COMPLETED FUNCTIONS
+def craft_results_url(passage):
+    # Takes a Bible passage and returns a URL for scraping.
+    results_url = base_url.replace(keyword, passage.replace(" ", "+"))
+    return results_url
+
+# INCOMPLETED FUNCTIONS
+async def scrape_one_results_page(page, results_url: str):
+    # Takes a Playwright page object and a URL for scraping, scrapes the page, and adds sermon URLs to the sermon_urls set.
+    url = ""
+    sermon_urls.add(url)
+    
+    
+async def get_all_sermon_urls(start_url: str):
+    # Takes a URL for scraping, scrapes first page + all pagination pages, returns a list of sermon URLs.
+    # Calls scrape_one_results_page for each page to populate the sermon_urls set.
+    async def run(playwright: Playwright):
+        chromium = playwright.chromium
+        browser = await chromium.launch(headless=True)
+        page = await browser.new_page()
+
+
+
+
+
+    return list(sermon_urls)
+
+async def scrape_all_sermon_urls(sermon_urls: list):
+    # Takes a list of sermon URLs, scrapes each page for the mp3 link, and returns a list of Sermon objects.
+    return sermons
+
+
+
+# ----- # 
+# The folllowing functions are scraps.
+# ----- # 
+
 pagination_urls = set()
 
-def craft_results_url(passage):
-    # This function takes a passage and crafts a URL for scraping.
-    results = base_url.replace(keyword, passage.replace(" ", "+"))
-    return results
+
 
 def scrape_results_page(results_url, first_page):
     # This function will scrape the results page and return a list of Sermon objects.
