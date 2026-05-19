@@ -12,6 +12,7 @@ import requests
 class Sermon:
     url: str
     url_mp3: str
+    bible_passage: str = ""
     title: str = ""
     speaker: str = ""
     location: str = ""
