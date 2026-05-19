@@ -1,4 +1,6 @@
-from scraper import craft_results_url, get_all_sermon_urls, scrape_all_sermon_urls
+import asyncio
+
+from scraper import craft_results_url, get_all_sermon_urls, scrape_all_sermon_page_urls
 from sermons import Sermon
 import webbrowser, sys
 
@@ -15,7 +17,7 @@ async def main():
     
     # Input: the list of pages where the sermons are located (sermon_urls)
     # Output: a list of Sermon objects with the title, passage, mp3 link, etc. for each sermon (sermons)
-    sermons = await scrape_all_sermon_urls(sermon_urls)
+    sermons = await scrape_all_sermon_page_urls(sermon_urls)
 
     def is_in_passage_range(sermon):
         # This function will take a sermon and return True if the sermon is in the passage range, and False otherwise.
@@ -31,4 +33,4 @@ async def main():
     return
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

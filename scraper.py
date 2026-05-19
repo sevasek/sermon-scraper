@@ -26,7 +26,7 @@ async def scrape_one_results_page(page, results_url: str):
     for link in sermon_page_links:
         # TODO: Check this produces the correct sermon URL. It should be in format "https://evchurch.info/media/code/"
         sermon_url = "https://evchurch.info" + await link.get_attribute("href")
-        single_sermon_pages.add(sermon_url)
+        single_sermon_pages.update([sermon_url])
     print(f"Found {len(sermon_page_links)} sermon links on {results_url}.")
     print("Sermon URLs:")
     for url in single_sermon_pages:
@@ -56,7 +56,12 @@ async def get_all_sermon_urls(start_url: str):
         # Initialise pagination_links with the start URL and update the links to the remaining results pages.
         pagination_links = set()
         pagination_links.add(start_url)
-        pagination_links.update(await page.query_selector_all('a[href*="display_page="]'))
+        elements = await page.query_selector_all('a[href*="display_page="]')
+        for elem in elements:
+            href = await elem.get_attribute("href")
+            if href is not None:
+                pagination_links.add("https://evchurch.info" + href)
+        print(f"Found {len(pagination_links)} pagination links.")
 
         # Loop through the pagination links and call scrape_one_results_page for each results page URL.
         for link in pagination_links:
@@ -73,7 +78,7 @@ async def get_all_sermon_urls(start_url: str):
             await run(playwright)
     
     # Calls the scrape function to commence the scraping process
-    asyncio.run(scrape())
+    await scrape()
 
     return list(sermon_page_urls)
 
