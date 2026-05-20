@@ -6,13 +6,21 @@
 import pythonbible as bible
 import sermons
 
-
 def get_verses_from_reference(normalized_references):
     
-    # Get every individual verse ID within the passage
-    verse_ids = bible.convert_reference_to_verse_ids(normalized_references)
+    # Return an empty set if input is null
+    if not normalized_references:
+        return set()
     
-    return set(verse_ids)
+    # If it's a list flatten it
+    if isinstance(normalized_references, list):
+        verse_ids = []
+        for ref in normalized_references:
+            verse_ids.extend(bible.convert_reference_to_verse_ids(ref))
+        return set(verse_ids)
+    # Single reference
+    else:
+        return set(bible.convert_reference_to_verse_ids(normalized_references))
 
 def is_overlapping(passage_1, passage_2):
     # Input: Two Bible passages (passage_1 and passage_2) in a list of pythonbible NormalizedReference objects.
@@ -31,14 +39,14 @@ def is_overlapping(passage_1, passage_2):
 # Main function to filter sermons by Bible passage
 # Input: A list of Sermon objects (sermons) and a Bible passage (bible_passage) in string format.
 # Output: A list of Sermon objects whose Bible passage overlaps with the given Bible passage.
-def filter_by_bible_passage(sermons, bible_passage):
+def filter_by_bible_passage(sermons, normalised_bible_passage):
     filtered_sermons = []
     # Convert passage_1 to a list of NormalizedReference objects using bible.get_references().
     # sermon.bible_passage is already a list of NormalizedReference objects.
     # Use the is_overlapping function to check if the two passages overlap and if they do, add the sermon to the filtered_sermons list.
-    passage_1 = bible.get_references(bible_passage)
+    passage_2 = normalised_bible_passage
     for sermon in sermons:
-        passage_2 = sermon.bible_passage
+        passage_1 = sermon.bible_passage
         if is_overlapping(passage_1, passage_2):
             filtered_sermons.append(sermon)
     return filtered_sermons

@@ -13,7 +13,7 @@ from sermons import Sermon
 # Output: Returns a URL of the results page to be scraped.
 def craft_results_url(passage):
 
-    results_url = base_url.replace(keyword, passage.replace(" ", "+"))
+    results_url = base_url.replace(keyword, passage).replace(" ", "+")
     return results_url
 
 # Input: Takes a the URL of the first results page.
@@ -61,6 +61,8 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the sermon page URLs for debugging purposes.
         print(f"Found {len(sermon_page_urls)} sermon page links.")
+        if sermon_page_urls is not None and not sermon_page_urls:
+            return []
         print("Sermon Page URLs:")
         for url in sermon_page_urls:
             print(url)
