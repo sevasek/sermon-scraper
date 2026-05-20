@@ -2,9 +2,12 @@
 # A collection of functions with the goal to scrape sermon URLs of a given Bible passage on the EV Church website.
 # Success means a list of sermon dataclass objects are returned for further processing.
 
-from constants import base_url, keyword
+from constants import base_url, keyword, geo_location
 from playwright.async_api import async_playwright, Playwright
 import asyncio
+import pythonbible as bible
+
+from sermons import Sermon
 
 # Input: A Bible passage in the format "Book Chapter:Verse"
 # Output: Returns a URL of the results page to be scraped.
@@ -20,9 +23,6 @@ def craft_results_url(passage):
 # The individual sermon page URLs for each results page are caught and added to the set of individual sermon page URLs.
 # Output: Returns a list of Sermon objects with the title, passage, mp3 link, etc. for each sermon (sermons).
 async def scrape_all_sermon_page_urls(start_url: str):
-
-    # Initialise the list of Sermon objects to be returned at the end of the function.
-    sermons = []
         
     # Starts the Playwright browser and navigates to the start URL to begin scraping.
     async def run(playwright: Playwright):
@@ -78,29 +78,78 @@ async def scrape_all_sermon_page_urls(start_url: str):
         for url in updated_sermon_page_urls:
             print(url)
 
+        # Initialise the list of Sermon objects to be returned at the end of the function.
+        sermons = []
+
         # Loop throught the sermon_page_urls and create Sermon objects for each URL.
         # The Sermon objects will be stored in a list and returned at the end of the function.
         for url in updated_sermon_page_urls:
             await page.goto(url, wait_until="domcontentloaded")
-            elements = await page.query_selector_all('a[href$=".mp3"]')
+
+            # Time to extract the relevant information for each sermon and create a Sermon object.
+            # URL
+            sermon_object_url = url
+
+            # MP3
+            sermon_object_mp3_url = ""
+            mp3_elements = await page.query_selector_all('source[src$=".mp3"]')
+            for elem in mp3_elements:
+                src = await elem.get_attribute("src")
+                if src is not None:
+                    mp3_url = "https://evchurch.info" + src
+                    sermon_object_mp3_url = mp3_url
+            print(f"MP3 URL: {sermon_object_mp3_url}")
+
+            # TITLE
+            title_elements = await page.query_selector('h2')
+            if title_elements is not None:
+                raw_title = await title_elements.text_content()
+                clean_title = "".join(raw_title).replace("\n                    ", "").replace("\xa0\xa0", "")
+
+            sermon_object_title = clean_title
+
+            # LOCATION
+            sermon_object_location = geo_location
+            
+            # BIBLE PASSAGE, SPEAKER, DATE, EVENT
+            elements = await page.query_selector_all('h4')
             for elem in elements:
-                href = await elem.get_attribute("href")
-                if href is not None:
-                    mp3_url = "https://evchurch.info" + href
-                    print(mp3_url)
-
+                text = await elem.inner_text()
+                if isinstance(text, str):
+                    bible_passages = bible.get_references(text)
+                    meta_parts = text.split(" | ")
+                    if len(meta_parts) == 4:
+                        sermon_object_bible_passage = bible_passages
+                        sermon_object_event = meta_parts[1]
+                        sermon_object_date = meta_parts[2]
+                        sermon_object_speaker = meta_parts[3]
+                    if len(meta_parts) == 3:
+                        sermon_object_bible_passage = ""
+                        sermon_object_event = meta_parts[0]
+                        sermon_object_date = meta_parts[1]
+                        sermon_object_speaker = meta_parts[2]
+                
+                # Create the Sermon object
+                sermon_object = Sermon(
+                    url=sermon_object_url, 
+                    url_mp3=sermon_object_mp3_url, 
+                    bible_passage=sermon_object_bible_passage,
+                    title=sermon_object_title,
+                    speaker=sermon_object_speaker,
+                    location=sermon_object_location,
+                    date=sermon_object_date,
+                    event=sermon_object_event)
+                sermons.append(sermon_object)
         await browser.close()
-
-        sermons.append("We got this far!")
-
-        return
+        return sermons
     
     # Runs the async function with Playwright
     async def scrape():
         async with async_playwright() as playwright:
-            await run(playwright)
+            object_list = await run(playwright)
+            return object_list
     
     # Calls the scrape function to commence the scraping process
-    await scrape()
+    x = await scrape()
 
-    return list(sermons)
+    return list(x)
