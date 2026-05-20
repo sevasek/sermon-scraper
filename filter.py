@@ -4,7 +4,6 @@
 # Output: only Sermon objects whose Bible passage overlaps with the given Bible passage.
 
 import pythonbible as bible
-import sermons
 
 def get_verses_from_reference(normalized_references):
     
@@ -49,4 +48,8 @@ def filter_by_bible_passage(sermons, normalised_bible_passage):
         passage_1 = sermon.bible_passage
         if is_overlapping(passage_1, passage_2):
             filtered_sermons.append(sermon)
+
+    print(f"Found {len(filtered_sermons)} sermons that intersect.")
+    for s in filtered_sermons:
+        print(f"{s.title} by {s.speaker}")
     return filtered_sermons

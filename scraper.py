@@ -42,9 +42,6 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the pagination links for debugging purposes.
         print(f"Found {len(pagination_links)} pagination links.")
-        print("Pagination URLs:")
-        for url in pagination_links:
-            print(url)
         
         # Initialise sermon_page_urls as an empty set to store the URLs of the individual sermon pages.
         sermon_page_urls = set()
@@ -63,9 +60,6 @@ async def scrape_all_sermon_page_urls(start_url: str):
         print(f"Found {len(sermon_page_urls)} sermon page links.")
         if sermon_page_urls is not None and not sermon_page_urls:
             return []
-        print("Sermon Page URLs:")
-        for url in sermon_page_urls:
-            print(url)
 
         # Update the sermon_page_urls to point to the watch page instead of the media page, as the mp3 links are located on the watch page.
         updated_sermon_page_urls = set()
@@ -76,9 +70,6 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the updated sermon page URLs for debugging purposes.
         print(f"Updated {len(updated_sermon_page_urls)} sermon page links to watch page URLs.")
-        print("Updated Sermon Page URLs:")  
-        for url in updated_sermon_page_urls:
-            print(url)
 
         # Initialise the list of Sermon objects to be returned at the end of the function.
         sermons = []
@@ -98,9 +89,7 @@ async def scrape_all_sermon_page_urls(start_url: str):
             for elem in mp3_elements:
                 src = await elem.get_attribute("src")
                 if src is not None:
-                    mp3_url = "https://evchurch.info" + src
-                    sermon_object_mp3_url = mp3_url
-            print(f"MP3 URL: {sermon_object_mp3_url}")
+                    sermon_object_mp3_url = src
 
             # TITLE
             title_elements = await page.query_selector('h2')
@@ -153,5 +142,6 @@ async def scrape_all_sermon_page_urls(start_url: str):
     
     # Calls the scrape function to commence the scraping process
     x = await scrape()
+    print(f"Found {len(x)} sermons.")
 
     return list(x)

@@ -3,9 +3,8 @@
 # The function will also update the download, download_status, and download_location attributes of the Sermon object based on the success or failure of the download attempt. 
 # The function will attempt to download the file up to 3 times before giving up and marking the download as failed.
 
-from fileinput import filename
-from urllib import response
 from uuid import uuid4
+from os import makedirs
 import requests
 
 import sermons
@@ -15,23 +14,24 @@ def download_mp3(sermon):
     while attempt_download < 3:
         # Attempt to download the mp3 file from url_mp3 and save it to a local directory.
         try:
-            # Code to download the mp3 file from url_mp3 and save it to a local directory goes here.
-            filename = f"audio/{uuid4()}.png"
-            response = requests.get(sermon.url_mp3)
+            # Download the mp3 file from url_mp3 and save it to a local directory goes here.
+            makedirs("audio", exist_ok=True)
+            filename = f"audio/{uuid4()}.mp3"
+            response = requests.get(sermon.url_mp3, timeout=30)
+            print("Starting download of !")
+            response.raise_for_status()
 
-            # Ensure the request was successful (Status Code 200)
-            if response.status_code == 200:
-                with open(filename, "wb") as f:
-                    f.write(response.content)
-                sermon.download = True
-                sermon.download_status = "Success"
-                print("Download complete!")
-            else:
-                print(f"Error: Could not download file. Status code: {response.status_code}")
-                sermon.download = True
-                sermon.download_status = "Failed"
+            # Success!
+            with open(filename, "wb") as f:
+                f.write(response.content)
+            
+            sermon.download = True
+            sermon.download_status = "Success"
+            sermon.download_location = filename
+            print("Download complete!")
             return
         
+        # Something went wrong, but I don't know what
         except Exception as e:
             print(f"Download attempt {attempt_download + 1} failed for {sermon.url_mp3}: {e}")
             attempt_download += 1
@@ -40,5 +40,7 @@ def download_mp3(sermon):
     sermon.download_status = "Failed after 3 attempts"
     return
 
-for sermon in sermons:
-    download_mp3(sermon)
+def download_mp3_update(sermon_objects):
+    for sermon in sermon_objects:
+        download_mp3(sermon)
+    return sermons
