@@ -1,6 +1,6 @@
 import asyncio
 
-import download
+from filter import filter_by_bible_passage
 from scraper import craft_results_url, scrape_all_sermon_page_urls
 from sermons import Sermon
 import sys
@@ -30,14 +30,16 @@ async def main():
     # Output: a list of Sermon objects with the title, passage, mp3 link, etc. for each sermon (sermons)
     sermons = await scrape_all_sermon_page_urls(results_url)
 
+    # Print all sermons before filtering
+    print("\nAll Sermons:")
     for sermon in sermons:
         print(sermon)
     
-    filtered_sermons = filter(sermons, passage)
+    filtered_sermons = filter_by_bible_passage(sermons, passage)
 
-    download(filtered_sermons)
-
-
+    print("\nFiltered Sermons:")
+    for sermon in filtered_sermons:
+        print(sermon)
 
     return
 
