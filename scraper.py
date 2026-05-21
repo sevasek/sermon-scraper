@@ -124,7 +124,7 @@ async def scrape_all_sermon_page_urls(start_url: str):
             # DATETIME THE DATE
             date_parts = date_string.split("/")
             date_datetime = date(int(date_parts[2]), int(date_parts[1]), int(date_parts[0]))
-            sermon_object_date = f"{date_datetime.day} {date_datetime.month} {date_datetime.year}"
+            sermon_object_date = f"{date_datetime.day} {date_datetime.strftime("%B")} {date_datetime.year}"
 
             # Create the Sermon object
             sermon_object = Sermon(
