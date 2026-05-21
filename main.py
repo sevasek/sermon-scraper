@@ -3,7 +3,7 @@ import asyncio
 from filter import filter_by_bible_passage
 from scraper import craft_results_url, scrape_all_sermon_page_urls
 from download import download_mp3_update
-from transcribe import transcribe
+from transcribe import transcribe_all
 import sys
 import pythonbible as bible
 
@@ -57,7 +57,7 @@ async def main():
 
     downloaded_sermons = download_mp3_update(filtered_sermons)
 
-    transcribe(downloaded_sermons)
+    transcribe_all(downloaded_sermons)
 
 if __name__ == "__main__":
     asyncio.run(main())
