@@ -1,5 +1,6 @@
 # Sermons Class - sermons.py
-# A dataclass for sermons is created after the scrape. A Sermon must contain the url of the page where the mp3 link was found, and the url of the mp3.
+# A dataclass for sermons is created after the scrape. 
+# A Sermon must contain the url of the page where the mp3 link was found, and the url of the mp3.
 
 from dataclasses import dataclass
 

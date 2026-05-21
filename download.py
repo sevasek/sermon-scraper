@@ -1,7 +1,4 @@
 # Download - download.py
-# A function to download the mp3 files for each sermon in the sermons list. The function will attempt to download the mp3 file from the url_mp3 attribute of the Sermon object and save it to a local directory. 
-# The function will also update the download, download_status, and download_location attributes of the Sermon object based on the success or failure of the download attempt. 
-# The function will attempt to download the file up to 3 times before giving up and marking the download as failed.
 
 from uuid import uuid4
 from os import makedirs

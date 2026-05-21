@@ -23,24 +23,19 @@ async def main():
     list_of_normalized_references = bible.get_references(sys.argv[1])
 
     # Prepare normalized and formatted references
-    # list_of_normalized_references = bible.get_references(sys.argv[1])
     string_of_formatted_references = bible.format_scripture_references(list_of_normalized_references)
     list_of_formatted_references = string_of_formatted_references.split(";")
 
-    # Create a list of tuples for matching passages
-    # Each tuple contains a formatted reference and the associated results URLs
     list_tuples_ref_results_urls = []
     for ref in list_of_formatted_references:
         url = craft_results_url(ref)
         list_tuples_ref_results_urls.append((ref, url))
 
-    # Output: a URL for scraping. Results_url is the URL for the first page of search results for the given passage.    
-    # Output: a list of Sermon objects with the title, passage, mp3 link, etc. for each sermon (sermons)
     all_sermons = []
 
     for tuple in list_tuples_ref_results_urls:
-        ref = tuple[0]
-        url = tuple[1]
+        ref = tuple[0] # I thought I would need this later. Turns out pythonbible is very versatile!
+        url = tuple[1] 
         sermons_subset = await scrape_all_sermon_page_urls(url)
         if sermons_subset is not None and not sermons_subset:
             continue
@@ -51,8 +46,6 @@ async def main():
         print(f"No sermons found for {string_of_formatted_references}.")
         return
 
-    # Input 1: A list of Sermon objects (all_sermons) containing a list of normalized references
-    # Input 2: A list of normalized references from the command line input (normalized_references).
     filtered_sermons = filter_by_bible_passage(all_sermons, list_of_normalized_references)
 
     downloaded_sermons = download_mp3_update(filtered_sermons)

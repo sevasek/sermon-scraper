@@ -1,9 +1,10 @@
+# The list of requirements to make this work is quite long.
+# I recommend using the Dockerfile
+
 # Requirements
 requests
 playwright==1.45.0          # stable version that works well
 pythonbible
-# tqdm
-# rich
 
 # Whisper audio to text model
 openai-whisper

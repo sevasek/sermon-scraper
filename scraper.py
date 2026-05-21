@@ -1,5 +1,4 @@
 # Scraper Functions - scraper.py
-# A collection of functions with the goal to scrape sermon URLs of a given Bible passage on the EV Church website.
 # Success means a list of sermon dataclass objects are returned for further processing.
 
 from constants import base_url, keyword, geo_location
@@ -10,19 +9,11 @@ from datetime import date, datetime
 
 from sermons import Sermon
 
-# Input: A Bible passage in the format "Book Chapter:Verse"
-# Output: Returns a URL of the results page to be scraped.
 def craft_results_url(passage):
 
     results_url = base_url.replace(keyword, passage).replace(" ", "+")
     return results_url
 
-# Input: Takes a the URL of the first results page.
-# Adds the URL of the first page to the results_pages set.
-# Scrapes the page for the remaining results page URLs and adds them to the results_pages set.
-# In a loop, calls scrape_one_results_page with results page URL, until all results pages have been scraped.
-# The individual sermon page URLs for each results page are caught and added to the set of individual sermon page URLs.
-# Output: Returns a list of Sermon objects with the title, passage, mp3 link, etc. for each sermon (sermons).
 async def scrape_all_sermon_page_urls(start_url: str):
         
     # Starts the Playwright browser and navigates to the start URL to begin scraping.
