@@ -22,6 +22,7 @@ def transcribe_using_whisper(model, sermon):
         with open(filename, "w") as f:
             f.write(result["text"])
         print(f"Transcription successful for {sermon.title} by {sermon.speaker}")
+        self.transcript_location = filename
 
         return
     else:

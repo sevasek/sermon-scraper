@@ -16,10 +16,4 @@ class Sermon:
     download: bool = None
     download_status: str = "Not attempted"
     download_location: str = ""
-
-
-
-        
-
-    
-    
+    transcript_location: str = ""
