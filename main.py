@@ -3,6 +3,7 @@ import asyncio
 from filter import filter_by_bible_passage
 from scraper import craft_results_url, scrape_all_sermon_page_urls
 from download import download_mp3_update
+from transcribe import transcribe
 import sys
 import pythonbible as bible
 
@@ -54,7 +55,9 @@ async def main():
     # Input 2: A list of normalized references from the command line input (normalized_references).
     filtered_sermons = filter_by_bible_passage(all_sermons, list_of_normalized_references)
 
-    downloaded_mp3 = download_mp3_update(filtered_sermons)
+    downloaded_sermons = download_mp3_update(filtered_sermons)
+
+    transcribe(downloaded_sermons)
 
 if __name__ == "__main__":
     asyncio.run(main())

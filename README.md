@@ -1,23 +1,24 @@
 # Boot.dev Personal Project 1
 
 ## Purpose
-This python script produces a research report on the techniques used in sermons on a particular passage of the Bible at EV Church.
+This python script produces transcriptions of sermons in the EV Church archive on a particular Bible passage.
 
 ## Background
-Sermon preparation requires a lot of time and creative energy. For those who practice the discipline of worldview preaching, whereby the preacher is seeking to persuade the audience to the Bible's view of God, themselves, and the world, it is critical that the sermon connects the message of the passage with the audience. One of the most fruitful avenues for crafting sermon techniques that connect the message with the audience is going back through sermon archives.
-Effective sermon techniques include applications, implications, illustrations, metaphors, imagery and rhetorical questions.
+This project is 
 EV Church is a growing evangelical church on the outskirts of Sydney, Australia that practices the discipline of worldview preaching. Their sermon archives contain many high-quality examples of worldview preaching.
-By automating the search for techniques, and providing full attribution, this system speeds up the creative process and increases the likelihood of a high-quality worldview sermon.
+Many of these excellent resources do not have transcriptions available.
+This tool will can be used to automate the process of transcribing this archive for research purposes.
 
-## How to Use
-1. Install from GitHub
+## How to Install & Run
+### Install Manually
+1. **Install from GitHub**
 
 ```bash
 git clone https://github.com/sevasek/personal-project.git
 cd personal-project
 ```
 
-2. Install Dependencies
+2. **Install Dependencies**
 ```bash
 pip install -r requirements.txt
 
@@ -25,19 +26,38 @@ pip install -r requirements.txt
 playwright install
 ```
 
-3. Set LLM API key
-The script will look for an Ollama API key and model name in the following location:
-
-```bash
-echo "OLLAMA_HOST=http://localhost:11434" >> ~/.sermon_tech/.env
-echo "OLLAMA_MODEL=llama3.1:8b" >> ~/.sermon_tech/.env
-echo "OLLAMA_API_KEY=your-api-key" >> ~/.sermon_tech/.env
-```
-
-4. Run locally
+3. **Run locally**
 ```bash
 python main.py "Genesis 1"
 ```
+
+### Install using Docker
+1. **Install Docker Desktop**
+```bash
+brew install --cask docker
+```
+2. **Start Docker Desktop**
+
+3. **Build the container**
+```bash
+docker compose build --no-cache
+```
+4. **Run the scraper**
+```bash
+# Run with a specific Bible passage
+docker compose run --rm scraper python main.py "Ezekiel 1"
+
+# Or run interactively (you can enter different passages)
+docker compose run --rm scraper
+```
+
+### Project Structure after first run
+```bash
+audio/          # Downloaded MP3 files
+text/           # Generated transcripts
+```
+
+**Note**: If you are using Docker, then the `audio/` and `text/` folders are automatically mounted from your host machine, so files persist after the container stops.
 
 ## Workflow
 

@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  scraper:
+    build: .
+    container_name: sermon-scraper
+    volumes:
+      - .:/app                    # Live code changes
+      - ./audio:/app/audio        # Persist downloads
+      - ./text:/app/text          # Persist transcripts
+    # Do NOT set a fixed command here — we'll pass arguments at runtime
+    stdin_open: true
+    tty: true

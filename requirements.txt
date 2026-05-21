@@ -1,2 +1,9 @@
-playwright
+# Requirements
+requests
+playwright==1.45.0          # stable version that works well
 pythonbible
+# tqdm
+# rich
+
+# Whisper audio to text model
+openai-whisper

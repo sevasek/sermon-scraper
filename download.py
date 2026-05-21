@@ -18,7 +18,7 @@ def download_mp3(sermon):
             makedirs("audio", exist_ok=True)
             filename = f"audio/{uuid4()}.mp3"
             response = requests.get(sermon.url_mp3, timeout=30)
-            print("Starting download of !")
+            print(f"Starting download of {sermon.url_mp3}.")
             response.raise_for_status()
 
             # Success!
@@ -43,4 +43,4 @@ def download_mp3(sermon):
 def download_mp3_update(sermon_objects):
     for sermon in sermon_objects:
         download_mp3(sermon)
-    return sermons
+    return sermon_objects
