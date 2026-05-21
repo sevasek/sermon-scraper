@@ -2,8 +2,7 @@
 # Success means a list of sermon dataclass objects are returned for further processing.
 
 from constants import base_url, keyword, geo_location
-from playwright.async_api import async_playwright, Playwright
-import asyncio
+from playwright.async_api import async_playwright
 import pythonbible as bible
 from datetime import date, datetime
 
@@ -15,9 +14,11 @@ def craft_results_url(passage):
     return results_url
 
 async def scrape_all_sermon_page_urls(start_url: str):
-        
-    # Starts the Playwright browser and navigates to the start URL to begin scraping.
-    async def run(playwright: Playwright):
+
+    # Runs the async function with Playwright
+    async with async_playwright() as playwright:
+
+        # Starts the Playwright browser and navigates to the start URL to begin scraping.
         chromium = playwright.chromium
         browser = await chromium.launch(headless=True)
         page = await browser.new_page()
@@ -115,7 +116,7 @@ async def scrape_all_sermon_page_urls(start_url: str):
             # DATETIME THE DATE
             date_parts = date_string.split("/")
             date_datetime = date(int(date_parts[2]), int(date_parts[1]), int(date_parts[0]))
-            sermon_object_date = f"{date_datetime.day} {date_datetime.strftime("%B")} {date_datetime.year}"
+            sermon_object_date = f'{date_datetime.day} {date_datetime.strftime("%B")} {date_datetime.year}'
 
             # Create the Sermon object
             sermon_object = Sermon(
@@ -130,15 +131,3 @@ async def scrape_all_sermon_page_urls(start_url: str):
             sermons.append(sermon_object)
         await browser.close()
         return sermons
-    
-    # Runs the async function with Playwright
-    async def scrape():
-        async with async_playwright() as playwright:
-            object_list = await run(playwright)
-            return object_list
-    
-    # Calls the scrape function to commence the scraping process
-    x = await scrape()
-    print(f"Found {len(x)} sermons.")
-
-    return list(x)
