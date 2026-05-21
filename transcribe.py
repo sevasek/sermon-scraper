@@ -23,9 +23,11 @@ def transcribe_using_whisper(model, sermon):
 
         sermon_uuid = sermon.download_location.removeprefix("audio/").removesuffix(".mp3")
         filename = f"text/{sermon_uuid}.txt"
-    
+        citation = f'\n{sermon.speaker}, "{sermon.title}", (sermon: EV Church, {sermon.location}, {sermon.date}), {sermon.url}.'
+
         with open(filename, "w", encoding="utf-8") as f:
             f.write(result["text"])
+            f.write(citation)
 
         print(f"Transcription successful for {sermon.title} by {sermon.speaker}")
         sermon.transcript_location = filename
@@ -41,7 +43,6 @@ def transcribe_all(downloaded_sermons):
     model = whisper.load_model("tiny")
     makedirs("text", exist_ok=True)
 
-    print(f"\n=== Before transcription ===")
     print(f"Total sermons: {len(downloaded_sermons)}")
     for i, s in enumerate(downloaded_sermons, 1):
         print(f"{i}. {s.title}")

@@ -6,6 +6,7 @@ from constants import base_url, keyword, geo_location
 from playwright.async_api import async_playwright, Playwright
 import asyncio
 import pythonbible as bible
+from datetime import date, datetime
 
 from sermons import Sermon
 
@@ -112,25 +113,30 @@ async def scrape_all_sermon_page_urls(start_url: str):
                     if len(meta_parts) == 4:
                         sermon_object_bible_passage = bible_passages
                         sermon_object_event = meta_parts[1]
-                        sermon_object_date = meta_parts[2]
+                        date_string = meta_parts[2]
                         sermon_object_speaker = meta_parts[3]
                     if len(meta_parts) == 3:
                         sermon_object_bible_passage = ""
                         sermon_object_event = meta_parts[0]
-                        sermon_object_date = meta_parts[1]
+                        date_string = meta_parts[1]
                         sermon_object_speaker = meta_parts[2]
-                
-                # Create the Sermon object
-                sermon_object = Sermon(
-                    url=sermon_object_url, 
-                    url_mp3=sermon_object_mp3_url, 
-                    bible_passage=sermon_object_bible_passage,
-                    title=sermon_object_title,
-                    speaker=sermon_object_speaker,
-                    location=sermon_object_location,
-                    date=sermon_object_date,
-                    event=sermon_object_event)
-                sermons.append(sermon_object)
+
+            # DATETIME THE DATE
+            date_parts = date_string.split("/")
+            date_datetime = date(int(date_parts[2]), int(date_parts[1]), int(date_parts[0]))
+            sermon_object_date = f"{date_datetime.day} {date_datetime.month} {date_datetime.year}"
+
+            # Create the Sermon object
+            sermon_object = Sermon(
+                url=sermon_object_url, 
+                url_mp3=sermon_object_mp3_url, 
+                bible_passage=sermon_object_bible_passage,
+                title=sermon_object_title,
+                speaker=sermon_object_speaker,
+                location=sermon_object_location,
+                date=sermon_object_date,
+                event=sermon_object_event)
+            sermons.append(sermon_object)
         await browser.close()
         return sermons
     
