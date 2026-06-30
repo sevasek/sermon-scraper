@@ -6,80 +6,112 @@ This project searches the [EV Church sermon archive](https://evchurch.info/media
 
 ## Features
 
-- Intelligent Bible passage search with verse-level matching
-- Automated MP3 downloading with retry logic
-- Audio transcription using Whisper (`tiny` model)
-- Docker support for easy, reproducible setup
-- Outputs organized into `audio/` and `text/` folders
-- SBL citation appended to transcription
+- Intelligent Bible passage search with verse-level matching via `pythonbible`
+- Playwright-driven scraper handles pagination automatically
+- Automated MP3 downloading with 3-attempt retry logic
+- Audio transcription using OpenAI Whisper (`tiny` model by default)
+- SBL-style citation appended to every transcript
+- Docker support for a fully reproducible, dependency-free setup
+- Outputs persist in `audio/` and `text/` folders (excluded from git)
 
-## Quick Start (Docker - Recommended)
+## Quick Start (Docker — Recommended)
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/sevasek/sermon-scraper.git
 cd sermon-scraper
 
-# 2. Build the container (first time only)
+# 2. Build the container (first time only — downloads Whisper model)
 docker compose build --no-cache
 
-# 3. Run the scraper
+# 3. Run the scraper with any Bible passage
 docker compose run --rm scraper python main.py "John 1"
-
-### Project Structure after first run
-```bash
-audio/          # Downloaded MP3 files
-text/           # Generated transcripts
-```
-
-### Example
 docker compose run --rm scraper python main.py "John 3:16"
 docker compose run --rm scraper python main.py "Jeremiah 29:11"
+```
+
+After the first run, you will find:
+```
+audio/          # Downloaded sermon MP3 files (git-ignored)
+text/           # Generated transcriptions (.txt, git-ignored)
+```
 
 ## Local Installation
+
 ```bash
 git clone https://github.com/sevasek/sermon-scraper.git
 cd sermon-scraper
 
-# Install dependencies
 pip install -r requirements.txt
-playwright install
+playwright install chromium
 
-# Run
 python main.py "Ezekiel 1"
 ```
 
-## Project Structure
-After running, you will see:
-```bash
-audio/          # Downloaded sermon MP3 files
-text/           # Generated transcriptions (.txt files)
-```
-**Note:** When using Docker, these folders are automatically mounted from your machine.
-
 ## How It Works
 
-1. Input → Bible passage(s) via command line
-2. Search → Playwright scrapes EV Church sermon archive
-3. Filter → pythonbible finds sermons with overlapping verses
-4. Download → MP3 files saved with retry logic
-5. Transcribe → Whisper (tiny model) converts audio to text and adds the citation
+```
+Input  →  Bible passage(s) via command line
+Search →  Playwright scrapes EV Church sermon archive (with pagination)
+Filter →  pythonbible finds sermons with overlapping verse IDs
+Download → MP3 files saved with retry logic
+Transcribe → Whisper (tiny model) converts audio to text + SBL citation
+```
 
-## Technologies Uses
+## Project Structure
 
-- Python 3.11
-- Playwright 1.45 – Browser automation
-- pythonbible – Bible reference parsing and formatting
-- OpenAI Whisper – Speech-to-text model
-- Docker – Environment
+```
+sermon-scraper/
+├── main.py          # Entry point — orchestrates the pipeline
+├── scraper.py       # Playwright scraper; returns list of Sermon objects
+├── filter.py        # Verse-level overlap filter
+├── download.py      # MP3 downloader with retry
+├── transcribe.py    # Whisper transcription + SBL citation
+├── sermons.py       # Sermon dataclass
+├── constants.py     # Base URL and hardcoded geo_location
+├── requirements.txt
+├── Dockerfile
+└── docker-compose.yml
+```
+
+## Technologies Used
+
+| Tool | Version | Purpose |
+|---|---|---|
+| Python | 3.11 | Runtime |
+| Playwright | 1.45 | Browser automation / scraping |
+| pythonbible | latest | Bible reference parsing |
+| OpenAI Whisper | latest | Speech-to-text |
+| Docker | — | Reproducible environment |
+
+## Limitations
+
+- **EV Church only** — the scraper is hardcoded to `evchurch.info`. The URL structure and HTML selectors are specific to their media archive.
+- **Location hardcoded** — `constants.py` sets `geo_location = "Erina, NSW"`. If the church has multiple campuses, update this manually.
+- **Tiny Whisper model** — `transcribe.py` uses the `tiny` model for speed. For better accuracy on quiet or accented audio, swap to `base` or `small` by editing `transcribe.py:43`.
+- **English only** — Whisper is forced to `language="en"` in `transcribe.py`.
 
 ## Development
+
 ```bash
-# Rebuild container after changes
+# Rebuild container after code changes
 docker compose build
 
-# Run with any passage
-docker compose run --rm scraper python main.py "Your Passage Here"
+# Run with a different passage
+docker compose run --rm scraper python main.py "Romans 8"
 ```
+
+## 🚀 Roadmap & Future Releases
+
+### v1.1 — Whisper model size flag
+Add a `--model` CLI argument so users can choose between `tiny`, `base`, `small`, `medium`, or `large` without editing source code. Tiny is fast; larger models are more accurate on quiet or accented recordings.
+
+### v1.2 — Progress bar + run summary
+Replace raw `print()` calls with a `tqdm` progress bar for downloads and transcription. On completion, print a summary table of sermons found, downloaded, and transcribed.
+
+### v2.0 — Multi-church adapter pattern
+Abstract the scraping logic into a `SermonScraper` base class so the tool can support additional church websites. `EVChurchScraper` would be the first concrete implementation. New churches could be added by extending the base class and updating `constants.py`.
+
 ## Afterword
-Made during Boot.dev DevOps coursework.
+
+Made during Boot.dev DevOps coursework as a personal project for studying Bible passages from sermon archives.
