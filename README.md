@@ -112,6 +112,15 @@ Replace raw `print()` calls with a `tqdm` progress bar for downloads and transcr
 ### v2.0 — Multi-church adapter pattern
 Abstract the scraping logic into a `SermonScraper` base class so the tool can support additional church websites. `EVChurchScraper` would be the first concrete implementation. New churches could be added by extending the base class and updating `constants.py`.
 
+### v2.1 — Local sermon index (avoid re-scraping)
+Persist scraped `Sermon` metadata (title, speaker, date, passage, URLs) to a local SQLite file after each run. On a repeat search, check the index before hitting `evchurch.info` again, and only re-scrape pages not already seen. This cuts run time on repeat passages and is a prerequisite for the two ideas below. *Effort: medium — priority: high.*
+
+### v2.2 — Offline full-text + passage search over existing transcripts
+Add a `python main.py --search "grace"` (or similar) mode that greps across `text/*.txt` and the local index instead of re-downloading, since transcripts already contain the SBL citation with speaker/date/passage. Useful once a personal archive builds up over multiple runs. *Effort: low — priority: medium.*
+
+### v2.3 — In-sermon verse reference tagging
+Post-process each transcript with `pythonbible` (already a dependency) to detect Bible references *spoken during* the sermon — not just the passage it was filed under — and annotate the `.txt` output with timestamps/verse tags. Tools like [Rhema](https://github.com/openbezal/rhema) and [AnchorCast](https://github.com/anchorcastapp-team/anchorcastapp) do this live for projection; doing it as an offline post-process is simpler and fits this project's batch-archival scope. *Effort: medium-high — priority: medium.*
+
 ## Afterword
 
 Made during Boot.dev DevOps coursework as a personal project for studying Bible passages from sermon archives.
