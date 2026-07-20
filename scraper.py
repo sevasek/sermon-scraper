@@ -13,8 +13,7 @@ def craft_results_url(passage):
     results_url = base_url.replace(keyword, passage).replace(" ", "+")
     return results_url
 
-async def scrape_all_sermon_page_urls(start_url: str):
-
+async def discover_sermon_page_urls(start_url: str) -> set:
     # Runs the async function with Playwright
     async with async_playwright() as playwright:
 
@@ -35,7 +34,7 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the pagination links for debugging purposes.
         print(f"Found {len(pagination_links)} pagination links.")
-        
+
         # Initialise sermon_page_urls as an empty set to store the URLs of the individual sermon pages.
         sermon_page_urls = set()
 
@@ -51,8 +50,10 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the sermon page URLs for debugging purposes.
         print(f"Found {len(sermon_page_urls)} sermon page links.")
+        await browser.close()
+
         if sermon_page_urls is not None and not sermon_page_urls:
-            return []
+            return set()
 
         # Update the sermon_page_urls to point to the watch page instead of the media page, as the mp3 links are located on the watch page.
         updated_sermon_page_urls = set()
@@ -63,6 +64,17 @@ async def scrape_all_sermon_page_urls(start_url: str):
 
         # Print the updated sermon page URLs for debugging purposes.
         print(f"Updated {len(updated_sermon_page_urls)} sermon page links to watch page URLs.")
+
+        return updated_sermon_page_urls
+
+async def scrape_sermon_details(updated_sermon_page_urls) -> list:
+    if not updated_sermon_page_urls:
+        return []
+
+    async with async_playwright() as playwright:
+        chromium = playwright.chromium
+        browser = await chromium.launch(headless=True)
+        page = await browser.new_page()
 
         # Initialise the list of Sermon objects to be returned at the end of the function.
         sermons = []
