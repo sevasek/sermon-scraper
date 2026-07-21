@@ -97,6 +97,7 @@ async def scrape_sermon_details(updated_sermon_page_urls) -> list:
                     sermon_object_mp3_url = src
 
             # TITLE
+            clean_title = ""
             title_elements = await page.query_selector('h2')
             if title_elements is not None:
                 raw_title = await title_elements.text_content()
@@ -106,8 +107,12 @@ async def scrape_sermon_details(updated_sermon_page_urls) -> list:
 
             # LOCATION
             sermon_object_location = geo_location
-            
+
             # BIBLE PASSAGE, SPEAKER, DATE, EVENT
+            sermon_object_bible_passage = ""
+            sermon_object_event = ""
+            sermon_object_speaker = ""
+            date_string = ""
             elements = await page.query_selector_all('h4')
             for elem in elements:
                 text = await elem.inner_text()
@@ -126,9 +131,13 @@ async def scrape_sermon_details(updated_sermon_page_urls) -> list:
                         sermon_object_speaker = meta_parts[2]
 
             # DATETIME THE DATE
-            date_parts = date_string.split("/")
-            date_datetime = date(int(date_parts[2]), int(date_parts[1]), int(date_parts[0]))
-            sermon_object_date = f'{date_datetime.day} {date_datetime.strftime("%B")} {date_datetime.year}'
+            if date_string:
+                date_parts = date_string.split("/")
+                date_datetime = date(int(date_parts[2]), int(date_parts[1]), int(date_parts[0]))
+                sermon_object_date = f'{date_datetime.day} {date_datetime.strftime("%B")} {date_datetime.year}'
+            else:
+                print(f"Warning: could not parse sermon metadata (date/speaker/event) for {url}")
+                sermon_object_date = ""
 
             # Create the Sermon object
             sermon_object = Sermon(
