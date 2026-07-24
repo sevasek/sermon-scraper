@@ -13,6 +13,7 @@ This project searches the [EV Church sermon archive](https://evchurch.info/media
 - SBL-style citation appended to every transcript
 - Docker support for a fully reproducible, dependency-free setup
 - Outputs persist in `audio/` and `text/` folders (excluded from git)
+- Local SQLite index (`sermon_index.db`) of scraped sermon metadata — repeat searches skip re-scraping pages already seen
 
 ## Quick Start (Docker — Recommended)
 
@@ -67,6 +68,7 @@ sermon-scraper/
 ├── filter.py        # Verse-level overlap filter
 ├── download.py      # MP3 downloader with retry
 ├── transcribe.py    # Whisper transcription + SBL citation
+├── index.py         # SQLite-backed local index (avoids re-scraping known pages)
 ├── sermons.py       # Sermon dataclass
 ├── constants.py     # Base URL and hardcoded geo_location
 ├── requirements.txt
@@ -112,8 +114,10 @@ Replace raw `print()` calls with a `tqdm` progress bar for downloads and transcr
 ### v2.0 — Multi-church adapter pattern
 Abstract the scraping logic into a `SermonScraper` base class so the tool can support additional church websites. `EVChurchScraper` would be the first concrete implementation. New churches could be added by extending the base class and updating `constants.py`.
 
-### v2.1 — Local sermon index (avoid re-scraping)
+### ✅ v2.1 — Local sermon index (avoid re-scraping)
 Persist scraped `Sermon` metadata (title, speaker, date, passage, URLs) to a local SQLite file after each run. On a repeat search, check the index before hitting `evchurch.info` again, and only re-scrape pages not already seen. This cuts run time on repeat passages and is a prerequisite for the two ideas below. *Effort: medium — priority: high.*
+
+**Done.** `index.py` maintains `sermon_index.db` (git-ignored). `discover_sermon_page_urls()` finds candidate sermon page URLs cheaply (no per-sermon detail scrape), then `main.py` splits them into cached vs. new: cached URLs are loaded straight from the index, and `scrape_sermon_details()` only runs against the URLs not yet indexed. Newly scraped sermons are saved back to the index for next time. See `test_index.py` for coverage of the save/load/upsert behavior.
 
 ### v2.2 — Offline full-text + passage search over existing transcripts
 Add a `python main.py --search "grace"` (or similar) mode that greps across `text/*.txt` and the local index instead of re-downloading, since transcripts already contain the SBL citation with speaker/date/passage. Useful once a personal archive builds up over multiple runs. *Effort: low — priority: medium.*
