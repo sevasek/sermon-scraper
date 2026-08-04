@@ -1,8 +1,10 @@
 # Transcribe - transcribe.py
 # Description
 
-import whisper
 from os import makedirs
+
+# Supported OpenAI Whisper model sizes, smallest/fastest to largest/most accurate.
+WHISPER_MODEL_SIZES = {"tiny", "base", "small", "medium", "large"}
 
 def transcribe_using_whisper(model, sermon):
 
@@ -38,9 +40,15 @@ def transcribe_using_whisper(model, sermon):
         print(f"Transcription failed for {sermon.title}: {e}")
         return False
 
-def transcribe_all(downloaded_sermons):
-    
-    model = whisper.load_model("tiny")
+def transcribe_all(downloaded_sermons, model_size="tiny"):
+
+    if model_size not in WHISPER_MODEL_SIZES:
+        raise ValueError(f"Unknown Whisper model size '{model_size}'. Choose from: {sorted(WHISPER_MODEL_SIZES)}")
+
+    import whisper  # Imported lazily - openai-whisper pulls in torch and is only needed here.
+
+    print(f"Loading Whisper model: {model_size}")
+    model = whisper.load_model(model_size)
     makedirs("text", exist_ok=True)
 
     print(f"Total sermons: {len(downloaded_sermons)}")

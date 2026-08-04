@@ -1,27 +1,45 @@
+import argparse
 import asyncio
 
 from filter import filter_by_bible_passage
 from scraper import craft_results_url, discover_sermon_page_urls, scrape_sermon_details
 from download import download_mp3_update
-from transcribe import transcribe_all
+from transcribe import transcribe_all, WHISPER_MODEL_SIZES
 from index import init_db, get_indexed_urls, load_sermons_by_urls, save_sermons
 import sys
 import pythonbible as bible
 
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(
+        prog="main.py",
+        description="Search, download, and transcribe EV Church sermons by Bible passage.",
+    )
+    parser.add_argument("bible_passage", help="Bible passage(s) to search for, e.g. 'John 3:16'")
+    parser.add_argument(
+        "--model",
+        default="tiny",
+        choices=sorted(WHISPER_MODEL_SIZES),
+        help="Whisper model size to use for transcription (default: tiny). "
+             "Larger models are more accurate but slower.",
+    )
+    return parser.parse_args(argv)
+
+
 async def main():
-    # Get the Bible passage(s) from the command line arguments.
-    if len(sys.argv) < 2:
-        print("Usage: python main.py <bible_passages>")
+    try:
+        args = parse_args(sys.argv[1:])
+    except SystemExit:
         return
 
     # Validate the input is a valid Bible passage
     try:
-        bible.get_references(sys.argv[1])
+        bible.get_references(args.bible_passage)
     except Exception as e:
         print(f"Invalid Bible passage: {e}")
         return
 
-    list_of_normalized_references = bible.get_references(sys.argv[1])
+    list_of_normalized_references = bible.get_references(args.bible_passage)
 
     # Prepare normalized and formatted references
     string_of_formatted_references = bible.format_scripture_references(list_of_normalized_references)
@@ -67,7 +85,7 @@ async def main():
 
     downloaded_sermons = download_mp3_update(filtered_sermons)
 
-    transcribe_all(downloaded_sermons)
+    transcribe_all(downloaded_sermons, model_size=args.model)
 
 if __name__ == "__main__":
     asyncio.run(main())

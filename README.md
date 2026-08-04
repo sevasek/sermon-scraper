@@ -9,7 +9,7 @@ This project searches the [EV Church sermon archive](https://evchurch.info/media
 - Intelligent Bible passage search with verse-level matching via `pythonbible`
 - Playwright-driven scraper handles pagination automatically
 - Automated MP3 downloading with 3-attempt retry logic
-- Audio transcription using OpenAI Whisper (`tiny` model by default)
+- Audio transcription using OpenAI Whisper (`tiny` model by default, selectable via `--model`)
 - SBL-style citation appended to every transcript
 - Docker support for a fully reproducible, dependency-free setup
 - Outputs persist in `audio/` and `text/` folders (excluded from git)
@@ -29,6 +29,9 @@ docker compose build --no-cache
 docker compose run --rm scraper python main.py "John 1"
 docker compose run --rm scraper python main.py "John 3:16"
 docker compose run --rm scraper python main.py "Jeremiah 29:11"
+
+# Use a larger, more accurate Whisper model
+docker compose run --rm scraper python main.py "Jeremiah 29:11" --model small
 ```
 
 After the first run, you will find:
@@ -90,7 +93,7 @@ sermon-scraper/
 
 - **EV Church only** — the scraper is hardcoded to `evchurch.info`. The URL structure and HTML selectors are specific to their media archive.
 - **Location hardcoded** — `constants.py` sets `geo_location = "Erina, NSW"`. If the church has multiple campuses, update this manually.
-- **Tiny Whisper model** — `transcribe.py` uses the `tiny` model for speed. For better accuracy on quiet or accented audio, swap to `base` or `small` by editing `transcribe.py:43`.
+- **Tiny Whisper model by default** — pass `--model base|small|medium|large` for better accuracy on quiet or accented audio (larger models are slower and use more memory).
 - **English only** — Whisper is forced to `language="en"` in `transcribe.py`.
 
 ## Development
@@ -105,8 +108,10 @@ docker compose run --rm scraper python main.py "Romans 8"
 
 ## 🚀 Roadmap & Future Releases
 
-### v1.1 — Whisper model size flag
+### ✅ v1.1 — Whisper model size flag
 Add a `--model` CLI argument so users can choose between `tiny`, `base`, `small`, `medium`, or `large` without editing source code. Tiny is fast; larger models are more accurate on quiet or accented recordings.
+
+**Done.** `main.py` parses `--model` via `argparse` (defaults to `tiny`, restricted to Whisper's supported sizes) and passes it through to `transcribe_all(downloaded_sermons, model_size=...)` in `transcribe.py`, which now loads whichever Whisper model was requested instead of hardcoding `tiny`. The `whisper` import moved into `transcribe_all` (it's only needed there), which also makes the CLI argument parsing testable without the heavy `openai-whisper`/`torch` dependency installed. See `test_main.py` for coverage of the default, an explicit `--model`, and rejection of unsupported sizes.
 
 ### v1.2 — Progress bar + run summary
 Replace raw `print()` calls with a `tqdm` progress bar for downloads and transcription. On completion, print a summary table of sermons found, downloaded, and transcribed.
