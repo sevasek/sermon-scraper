@@ -2,8 +2,23 @@
 
 import unittest
 
-from main import parse_args
+from main import _successfully_parsed, parse_args
+from sermons import Sermon
 from transcribe import WHISPER_MODEL_SIZES
+
+
+class SuccessfullyParsedTests(unittest.TestCase):
+    def test_keeps_sermons_with_a_parsed_date(self):
+        sermon = Sermon(url="https://evchurch.info/a", url_mp3="a.mp3", date="1 January 2026")
+        self.assertEqual(_successfully_parsed([sermon]), [sermon])
+
+    def test_drops_sermons_with_no_parsed_date(self):
+        good = Sermon(url="https://evchurch.info/a", url_mp3="a.mp3", date="1 January 2026")
+        failed = Sermon(url="https://evchurch.info/b", url_mp3="b.mp3", date="")
+        self.assertEqual(_successfully_parsed([good, failed]), [good])
+
+    def test_empty_input(self):
+        self.assertEqual(_successfully_parsed([]), [])
 
 
 class ParseArgsTests(unittest.TestCase):
