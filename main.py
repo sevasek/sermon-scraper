@@ -10,6 +10,13 @@ import sys
 import pythonbible as bible
 
 
+def _successfully_parsed(sermons):
+    # A blank date means scrape_sermon_details couldn't match the expected page
+    # markup; skip indexing these so they're retried next run instead of being
+    # permanently cached as blank (REVIEW.md).
+    return [s for s in sermons if s.date]
+
+
 def parse_args(argv):
     parser = argparse.ArgumentParser(
         prog="main.py",
@@ -72,7 +79,7 @@ async def main():
 
         if new_urls:
             newly_scraped = await scrape_sermon_details(new_urls)
-            save_sermons(newly_scraped)
+            save_sermons(_successfully_parsed(newly_scraped))
             sermons_subset += newly_scraped
 
         all_sermons += sermons_subset
