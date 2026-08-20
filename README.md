@@ -9,11 +9,12 @@ This project searches the [EV Church sermon archive](https://evchurch.info/media
 - Intelligent Bible passage search with verse-level matching via `pythonbible`
 - Playwright-driven scraper handles pagination automatically
 - Automated MP3 downloading with 3-attempt retry logic
+- MP3 downloads are validated against a trusted-host allow-list (only `https://evchurch.info/...` URLs are fetched) and capped at 200MB, streamed to disk so a lying/missing `Content-Length` can't fill the disk
 - Audio transcription using OpenAI Whisper (`tiny` model by default, selectable via `--model`)
 - SBL-style citation appended to every transcript
 - Docker support for a fully reproducible, dependency-free setup
 - Outputs persist in `audio/` and `text/` folders (excluded from git)
-- Local SQLite index (`sermon_index.db`) of scraped sermon metadata — repeat searches skip re-scraping pages already seen
+- Local SQLite index (`sermon_index.db`) of scraped sermon metadata — repeat searches skip re-scraping pages already seen; sermons whose detail page couldn't be parsed are not cached, so they're retried on the next run instead of being stuck with blank metadata
 
 ## Quick Start (Docker — Recommended)
 
@@ -86,12 +87,14 @@ sermon-scraper/
 | Python | 3.11 | Runtime |
 | Playwright | 1.45 | Browser automation / scraping |
 | pythonbible | latest | Bible reference parsing |
+| requests | latest | MP3 downloading |
 | OpenAI Whisper | latest | Speech-to-text |
 | Docker | — | Reproducible environment |
 
 ## Limitations
 
-- **EV Church only** — the scraper is hardcoded to `evchurch.info`. The URL structure and HTML selectors are specific to their media archive.
+- **EV Church only** — the scraper is hardcoded to `evchurch.info`. The URL structure and HTML selectors are specific to their media archive. `download.py` also refuses to fetch an MP3 from any other host, even if a scraped page somehow points elsewhere.
+- **200MB download cap** — `download.py` rejects any MP3 whose reported or actual size exceeds 200MB. This comfortably covers an hour-long sermon but would reject an unusually long recording; adjust `MAX_MP3_BYTES` in `download.py` if needed.
 - **Location hardcoded** — `constants.py` sets `geo_location = "Erina, NSW"`. If the church has multiple campuses, update this manually.
 - **Tiny Whisper model by default** — pass `--model base|small|medium|large` for better accuracy on quiet or accented audio (larger models are slower and use more memory).
 - **English only** — Whisper is forced to `language="en"` in `transcribe.py`.
