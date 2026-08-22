@@ -10,6 +10,11 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
+# Keep the Whisper/Playwright caches under /app (owned by the non-root
+# user created below) instead of root's home directory.
+ENV HOME=/app \
+    PLAYWRIGHT_BROWSERS_PATH=/app/pw-browsers
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
@@ -21,5 +26,15 @@ RUN python -c "import whisper; print('Downloading Whisper tiny model...'); model
 RUN playwright install chromium
 
 COPY . .
+
+# Run as a non-root user. This image bundles Playwright/Chromium and
+# PyTorch/Whisper -- both large, frequently-patched native dependency
+# chains -- and docker-compose.yml bind-mounts host directories into the
+# container, so root here would give a future RCE in either stack more
+# than a disposable container filesystem to work with.
+RUN groupadd --gid 1000 scraper && \
+    useradd --uid 1000 --gid scraper --create-home scraper && \
+    chown -R scraper:scraper /app
+USER scraper
 
 CMD ["python", "main.py"]
