@@ -2,9 +2,9 @@
 # I recommend using the Dockerfile
 
 # Requirements
-requests
+requests==2.32.5
 playwright==1.45.0          # stable version that works well
-pythonbible
+pythonbible==0.13.1
 
 # Whisper audio to text model
-openai-whisper
+openai-whisper==20250625
